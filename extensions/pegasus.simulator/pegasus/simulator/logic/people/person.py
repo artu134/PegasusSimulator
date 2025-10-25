@@ -15,6 +15,7 @@ from pxr import Sdf
 # High level Isaac sim APIs
 import NavSchema
 import omni.client
+from isaacsim.core.utils import prims
 from omni.usd import get_stage_next_free_path
 from isaacsim.storage.native import get_assets_root_path
 
@@ -37,7 +38,7 @@ class Person:
     """
 
     # Get root assets path from setting, if not set, get the Isaac-Sim asset path
-    people_asset_folder = "http://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/4.2/Isaac/People/Characters/"
+    people_asset_folder = "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/5.1/Isaac/People/Characters/"
     character_root_prim_path = PrimPaths.characters_parent_path()
 
     assets_root_path = None   
@@ -74,6 +75,7 @@ class Person:
 
         # Load the simulation manager
         self.sim_manager = SimulationManager()
+        self.sim_manager.load_filters()
 
         # Variable that will hold the current state of the vehicle
         self._state = State()
@@ -98,32 +100,35 @@ class Person:
         # Spawn the agent in the world
         self.spawn_agent(self.char_usd_file, self._stage_prefix, init_pos, init_yaw)
 
+        # Characters assets path:
+        # https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/5.1/Isaac/People/Characters/
+
         # Add the animation graph to the agent, such that it can move around
         self.character_graph = None
-        self.add_animation_graph_to_agent()
+        #self.add_animation_graph_to_agent()
 
         # Set the controller for the person if any and initialize it
-        self._controller = controller
-        if self._controller:
-           self._controller.initialize(self)
+        # self._controller = controller
+        # if self._controller:
+        #    self._controller.initialize(self)
 
         # Set the backend for publishing the state of the person
-        self._backend = backend
-        if self._backend:
-            self._backend.initialize(self)
+        # self._backend = backend
+        # if self._backend:
+        #     self._backend.initialize(self)
 
         # Add a callback to the physics engine to update the current state of the person
-        self._world.add_physics_callback(self._stage_prefix + "/state", self.update_state)
+        #self._world.add_physics_callback(self._stage_prefix + "/state", self.update_state)
 
         # Add the update method to the physics callback if the world was received
         # so that we can apply the new references to be tracked by the person
-        self._world.add_physics_callback(self._stage_prefix + "/update", self.update)
+        #self._world.add_physics_callback(self._stage_prefix + "/update", self.update)
 
         # Set the flag that signals if the simulation is running or not
         self._sim_running = False
 
         # Add a callback to start/stop of the simulation once the play/stop button is hit
-        self._world.add_timeline_callback(self._stage_prefix + "/start_stop_sim", self.sim_start_stop)
+        #self._world.add_timeline_callback(self._stage_prefix + "/start_stop_sim", self.sim_start_stop)
 
     @property
     def state(self):
@@ -253,18 +258,18 @@ class Person:
         CharacterUtil.load_character_usd_to_stage(usd_file, init_pos, init_yaw, character_name)
 
         # Add the current person to the person manager
-        PeopleManager.get_people_manager().add_person(self._stage_prefix, self)
+        #PeopleManager.get_people_manager().add_person(self._stage_prefix, self)
 
         # Get the handle to the character skeleton root prim
-        self.character_skel_root, self.character_skel_root_stage_path = Person._transverse_prim(self._current_stage, self._stage_prefix)
+        #self.character_skel_root, self.character_skel_root_stage_path = Person._transverse_prim(self._current_stage, self._stage_prefix)
 
         # Update the navigation mesh to include the character skeleton root prim
-        omni.kit.commands.execute("ApplyNavMeshAPICommand", prim_path=stage_name, api=NavSchema.NavMeshExcludeAPI)
+        #omni.kit.commands.execute("ApplyNavMeshAPICommand", prim_path=stage_name, api=NavSchema.NavMeshExcludeAPI)
 
     def add_animation_graph_to_agent(self):
         
         # Load the character skeleton and animations (if not loaded yet)
-        self.sim_manager.load_default_skeleton_and_animations()
+        self.load_default_skeleton_and_animations()
 
         # The part bellow is based on "setup_animation_graph_to_character" from the replicator SimulationManager class
         default_biped_prim = PrimPaths.biped_prim_path()
@@ -276,6 +281,30 @@ class Person:
 
         # Add the animation graph to the character
         omni.kit.commands.execute("ApplyAnimationGraphAPICommand", paths=[Sdf.Path(self.character_skel_root.GetPrimPath())], animation_graph_path=Sdf.Path(anim_graph_prim.GetPrimPath()))
+
+    def load_default_skeleton_and_animations(self):
+        """
+        From Isaac Sim Replicator API 4.5.0 (they keep chaning the location of this function...).
+        Loads the default biped skeleton that Animation Graph requires. Also loads character animations for idle,
+        walking, lookaround and sitting.
+        """
+
+        stage = omni.usd.get_context().get_stage()
+        parent_path = PrimPaths.characters_parent_path()
+        if not stage.GetPrimAtPath(parent_path):
+            prims.create_prim(parent_path, "Xform")
+
+        biped_prim_path = PrimPaths.biped_prim_path()
+
+        if not stage.GetPrimAtPath(biped_prim_path):
+            prim = prims.create_prim(
+                biped_prim_path,
+                "Xform",
+                usd_path="/exts/isaacsim.replicator.agent/asset_settings/default_biped_assets_path",
+            )
+            prim.GetAttribute("visibility").Set("invisible")
+
+        populate_anim_graph()
 
     @staticmethod
     def _transverse_prim(stage, stage_prefix):
