@@ -42,7 +42,7 @@ This was done to simplify the launching of Isaac Sim from the terminal with ROS2
 
 Please refer to the updated documentation for more details.
 
-* **2025-10-26**: Pegasus Simulator v5.1.0 is released for Isaac 5.1.0. This version is **NOT** compatible with older versions of Isaac Sim. The Ardupilot experimental interface was not tested in this version. This update had an initial open-source contribution from `HO4X <https://github.com/HO4X>`__.
+* **2025-10-26**: Pegasus Simulator v5.1.0 is released for Isaac 5.1.0. This version is **NOT** compatible with older versions of Isaac Sim. The Ardupilot experimental interface was not tested in this version. This update had an initial open-source contribution from `Victor Kallenbach <https://github.com/HO4X>`__.
 * **2025-10-25**: Pegasus Simulator v4.5.1 is released for Isaac 4.5.0. This version is **NOT** compatible with older versions of Isaac Sim. The Ardupilot experimental interface was fixed and improved by `Seunghwan Jo <https://github.com/SwiftGust>`__ and `Tomer Tiplitsky <https://github.com/TomerTip>`__.
 * **2025-07-20**: Pegasus Simulator v4.5.0 is released for Isaac 4.5.0. This version is **NOT** compatible with older versions of Isaac Sim. The Ardupilot experimental interface was not tested in this version.
 * **2024-11-01**: Pegasus Simulator v4.2.0 is released for Isaac 4.2.0. This version is **NOT** compatible with older versions of Isaac Sim. This version includes a new experimental interface for Ardupilot integration, provided by open-source contributor `Tomer Tiplitsky <https://github.com/TomerTip>`__.
