@@ -1,0 +1,173 @@
+#usda 1.0
+(
+    defaultPrim = "Root"
+    upAxis = "Z"
+)
+
+def Xform "Root"
+{
+    def Xform "vehicle"
+    {
+        token ui:displayGroup = "Material Graphs"
+        token ui:displayName = "fixedwing"
+        int ui:order = 1024
+        float3 xformOp:rotateXYZ = (0, 0, 0)
+        float3 xformOp:scale = (1, 1, 1)
+        double3 xformOp:translate = (0, 0, 0)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateXYZ", "xformOp:scale"]
+
+        def Xform "body" (
+            apiSchemas = ["PhysicsMassAPI", "PhysicsRigidBodyAPI", "PhysxRigidBodyAPI", "PhysicsArticulationRootAPI", "PhysxArticulationAPI"]
+        )
+        {
+            # Physics properties for a small RC fixed-wing (~2.5 kg)
+            point3f physics:centerOfMass = (0, 0, 0)
+            # Inertia tensor for a fixed-wing aircraft (elongated along X)
+            # Ixx, Iyy, Izz - higher values for pitch/yaw due to wing span
+            float3 physics:diagonalInertia = (0.05, 0.15, 0.12)
+            bool physics:kinematicEnabled = 0
+            float physics:mass = 2.5
+            bool physics:rigidBodyEnabled = 1
+            float physxRigidBody:angularDamping = 0.1
+            float physxRigidBody:linearDamping = 0.01
+            float physxRigidBody:maxAngularVelocity = 10000
+            float physxRigidBody:maxContactImpulse = 0.1
+            bool primvars:doNotCastShadows = 0
+            quatf xformOp:orient = (1, 0, 0, 0)
+            double3 xformOp:scale = (1, 1, 1)
+            float3 xformOp:translate = (0, 0, 0)
+            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+
+            # Fuselage - long box along X axis
+            def Cube "fuselage" (
+                apiSchemas = ["PhysicsCollisionAPI", "PhysxCollisionAPI"]
+            )
+            {
+                float3[] extent = [(-0.5, -0.5, -0.5), (0.5, 0.5, 0.5)]
+                bool physics:collisionEnabled = 1
+                double size = 1
+                quatd xformOp:orient = (1, 0, 0, 0)
+                # Fuselage: 0.8m long, 0.1m wide, 0.1m tall
+                double3 xformOp:scale = (0.8, 0.1, 0.1)
+                double3 xformOp:translate = (0, 0, 0)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                
+                color3f[] primvars:displayColor = [(0.2, 0.2, 0.8)]
+            }
+
+            # Main wing - flat box perpendicular to fuselage
+            def Cube "main_wing" (
+                apiSchemas = ["PhysicsCollisionAPI", "PhysxCollisionAPI"]
+            )
+            {
+                float3[] extent = [(-0.5, -0.5, -0.5), (0.5, 0.5, 0.5)]
+                bool physics:collisionEnabled = 1
+                double size = 1
+                quatd xformOp:orient = (1, 0, 0, 0)
+                # Wing: 0.25m chord, 2.0m span, 0.02m thick
+                double3 xformOp:scale = (0.25, 2.0, 0.02)
+                # Wing slightly behind center of mass
+                double3 xformOp:translate = (-0.05, 0, 0.02)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                
+                color3f[] primvars:displayColor = [(0.8, 0.8, 0.2)]
+            }
+
+            # Horizontal stabilizer (tail wing)
+            def Cube "horizontal_stabilizer" (
+                apiSchemas = ["PhysicsCollisionAPI", "PhysxCollisionAPI"]
+            )
+            {
+                float3[] extent = [(-0.5, -0.5, -0.5), (0.5, 0.5, 0.5)]
+                bool physics:collisionEnabled = 1
+                double size = 1
+                quatd xformOp:orient = (1, 0, 0, 0)
+                # H-stab: 0.12m chord, 0.5m span, 0.01m thick
+                double3 xformOp:scale = (0.12, 0.5, 0.01)
+                # At rear of fuselage
+                double3 xformOp:translate = (-0.38, 0, 0.02)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                
+                color3f[] primvars:displayColor = [(0.8, 0.2, 0.2)]
+            }
+
+            # Vertical stabilizer (tail fin)
+            def Cube "vertical_stabilizer" (
+                apiSchemas = ["PhysicsCollisionAPI", "PhysxCollisionAPI"]
+            )
+            {
+                float3[] extent = [(-0.5, -0.5, -0.5), (0.5, 0.5, 0.5)]
+                bool physics:collisionEnabled = 1
+                double size = 1
+                quatd xformOp:orient = (1, 0, 0, 0)
+                # V-stab: 0.12m chord, 0.01m thick, 0.15m tall
+                double3 xformOp:scale = (0.12, 0.01, 0.15)
+                # At rear of fuselage, above center
+                double3 xformOp:translate = (-0.38, 0, 0.1)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                
+                color3f[] primvars:displayColor = [(0.2, 0.8, 0.2)]
+            }
+            
+            # Nose cone (visual only, no collision to reduce complexity)
+            def Cube "nose"
+            {
+                float3[] extent = [(-0.5, -0.5, -0.5), (0.5, 0.5, 0.5)]
+                double size = 1
+                quatd xformOp:orient = (1, 0, 0, 0)
+                double3 xformOp:scale = (0.1, 0.08, 0.08)
+                double3 xformOp:translate = (0.45, 0, 0)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                
+                color3f[] primvars:displayColor = [(0.1, 0.1, 0.1)]
+            }
+        }
+
+        # Propeller (optional visual element with revolute joint)
+        def Xform "propeller" (
+            apiSchemas = ["PhysicsMassAPI", "PhysicsRigidBodyAPI", "PhysxRigidBodyAPI"]
+        )
+        {
+            point3f physics:centerOfMass = (0, 0, 0)
+            float3 physics:diagonalInertia = (0.0001, 0.0005, 0.0005)
+            bool physics:kinematicEnabled = 0
+            float physics:mass = 0.02
+            bool physics:rigidBodyEnabled = 1
+            float physxRigidBody:angularDamping = 0.001
+            float physxRigidBody:maxAngularVelocity = 10000
+            float physxRigidBody:maxContactImpulse = 0.1
+            quatf xformOp:orient = (0.70710677, 0, 0.70710677, 0)
+            double3 xformOp:scale = (1, 1, 1)
+            float3 xformOp:translate = (0.5, 0, 0)
+            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+
+            # Propeller blade visual
+            def Cube "blade"
+            {
+                float3[] extent = [(-0.5, -0.5, -0.5), (0.5, 0.5, 0.5)]
+                double size = 1
+                quatd xformOp:orient = (1, 0, 0, 0)
+                # Propeller: 0.02m thick, 0.3m diameter (two blades)
+                double3 xformOp:scale = (0.02, 0.3, 0.01)
+                double3 xformOp:translate = (0, 0, 0)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                
+                color3f[] primvars:displayColor = [(0.3, 0.3, 0.3)]
+            }
+
+            def PhysicsRevoluteJoint "propeller_joint"
+            {
+                uniform token physics:axis = "X"
+                rel physics:body0 = </Root/vehicle/body>
+                rel physics:body1 = </Root/vehicle/propeller>
+                float physics:breakForce = inf
+                float physics:breakTorque = inf
+                point3f physics:localPos0 = (0.5, 0, 0)
+                point3f physics:localPos1 = (0, 0, 0)
+                quatf physics:localRot0 = (0.70710677, 0, 0.70710677, 0)
+                quatf physics:localRot1 = (1, 0, 0, 0)
+            }
+        }
+    }
+}
+
