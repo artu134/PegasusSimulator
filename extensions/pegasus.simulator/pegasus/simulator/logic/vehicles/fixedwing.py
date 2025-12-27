@@ -6,6 +6,7 @@
 """
 
 import numpy as np
+import carb
 from scipy.spatial.transform import Rotation
 
 from omni.isaac.dynamic_control import _dynamic_control
@@ -170,6 +171,7 @@ class FixedWing(Vehicle):
         self._target_attitude = np.array([0.0, 0.0, 0.0, 1.0])  # quaternion [qx, qy, qz, qw]
         self._target_euler = np.array([0.0, 0.0, 0.0])  # [roll, pitch, yaw]
         self._throttle_command = 0.0  # normalized [0, 1]
+        self._warned_invalid_force = False
 
     def start(self):
         """Called when the simulation starts."""
@@ -189,7 +191,9 @@ class FixedWing(Vehicle):
         """
 
         # Get the articulation root of the vehicle
-        articulation = self.get_dc_interface().get_articulation(self._stage_prefix)
+        articulation = self.get_dc_interface().get_articulation(
+            self._stage_prefix + "/body"
+        )
 
         # ----- Get Control Inputs from Backend -----
         if len(self._backends) != 0:
@@ -217,7 +221,19 @@ class FixedWing(Vehicle):
         # Add propeller reaction torque (roll moment)
         total_moment[0] += prop_moment
 
+        # Clamp forces/moments to avoid numerical blow-ups
+        max_force = 200.0
+        max_moment = 50.0
+        total_force = np.clip(total_force, -max_force, max_force)
+        total_moment = np.clip(total_moment, -max_moment, max_moment)
+
         # ----- Apply Forces and Torques to the Vehicle Body -----
+        if not np.all(np.isfinite(total_force)) or not np.all(np.isfinite(total_moment)):
+            if not self._warned_invalid_force:
+                carb.log_warn("FixedWing: invalid force/torque detected, skipping physics step")
+                self._warned_invalid_force = True
+            return
+
         self.apply_force(
             [total_force[0], total_force[1], total_force[2]], 
             body_part="/body"
@@ -229,7 +245,7 @@ class FixedWing(Vehicle):
 
         # ----- Handle Propeller Visual (if applicable) -----
         if articulation:
-            self.handle_propeller_visual(throttle_pwm, articulation)
+            self.handle_propeller_visual(self._propulsion.throttle_pwm, articulation)
 
         # ----- Call Backend Updates -----
         for backend in self._backends:
@@ -422,4 +438,3 @@ class FixedWing(Vehicle):
     def propulsion(self):
         """Access to the propulsion model."""
         return self._propulsion
-

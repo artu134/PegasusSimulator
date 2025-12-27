@@ -73,8 +73,13 @@ class Magnetometer(Sensor):
             (dict) A dictionary containing the current state of the sensor (the data produced by the sensor)
         """
 
+        if dt <= 0.0:
+            return self._state
+
         # Get the latitude and longitude from the current state
         latitude, longitude = reprojection(state.position, np.radians(self._origin_lat), np.radians(self._origin_lon))
+        if not np.isfinite(latitude) or not np.isfinite(longitude):
+            return self._state
 
         # Magnetic declination and inclination (radians)
         declination_rad: float = np.radians(get_mag_declination(np.degrees(latitude), np.degrees(longitude)))

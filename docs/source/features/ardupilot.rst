@@ -9,6 +9,10 @@ ArduPilot (Experimental)
    :target: https://github.com/ArduPilot/ardupilot
    :alt: ArduPilot-Copter 4.4
 
+.. image:: https://img.shields.io/badge/ArduPilot--Plane-4.4.0-brightgreen.svg
+   :target: https://github.com/ArduPilot/ardupilot
+   :alt: ArduPilot-Plane 4.4
+
 .. image:: https://img.shields.io/badge/Ubuntu-22.04LTS-brightgreen.svg
    :target: https://releases.ubuntu.com/22.04/
    :alt: Ubuntu 22.04
@@ -22,8 +26,8 @@ To get PegasusSimulator and ArduPilot SITL talking, the open-source contributor 
 This project allows developers to create a custom simulator and integrate it with ArduPilot SITL control using Python!
 
 
-Installing Ardupilot (Arducopter)
----------------------------------
+Installing ArduPilot (ArduCopter + ArduPlane)
+----------------------------------------------
 
 1. Ensure that you have the PegasusSimulator already installed. If you have not, follow the `PegasusSimulator Installation <https://pegasussimulator.github.io/PegasusSimulator/source/setup/installation.html>`_ steps, and then come back to this page.
 
@@ -40,28 +44,21 @@ Installing Ardupilot (Arducopter)
         # Python packages
         pip install pymavlink MAVProxy kconfiglib jinja2 empy jsonschema pyros-genmsg packaging toml numpy future future lxml pymavlink pyserial geocoder empy==3.3.4 ptyprocess dronecan flake8 junitparser pygame intelhex --user 
 
-3. Clone `Ardupilot <https://github.com/ArduPilot/ardupilot>`__ into your home directory:
+3. Initialize the ArduPilot submodules (Copter + Plane) inside this repo:
 
     .. code:: bash
 
-        # Option 1: With HTTPS
-        git clone https://github.com/ArduPilot/ardupilot.git
-        # Option 2: With SSH (you need to setup a github account with ssh keys)
-        git clone git@github.com:ArduPilot/ardupilot.git
+        # From the PegasusSimulator repo root
+        git submodule update --init --recursive
 
-4. Checkout to the stable version and compile the code for software-in-the-loop (SITL) mode:
+4. Build ArduCopter SITL:
 
     .. code:: bash
         
-        # Go to the PX4 directory
-        cd ardupilot
+        # Go to the ArduCopter submodule
+        cd third_party/ardupilot-copter
 
-        # Checkout to the latest stable release
-        git checkout ArduCopter-stable
-
-        # Initiate all the submodules. Note this will download modules such as SITL-gazebo which we do not need
-        # but this is the safest way to make sure that the PX4-Autopilot and its submodules are all checked out in 
-        # a stable and well tested release
+        # Make sure all submodules are present
         git submodule update --init --recursive
 
         # Generate the configuration for compilation
@@ -76,11 +73,34 @@ Installing Ardupilot (Arducopter)
         # Run the script to setup the simulation
         python3 sim_vehicle.py -v copter --console --map -w
 
+5. Build ArduPlane SITL:
+
+    .. code:: bash
+
+        # Go to the ArduPlane submodule
+        cd third_party/ardupilot-plane
+
+        # Make sure all submodules are present
+        git submodule update --init --recursive
+
+        # Generate the configuration for compilation
+        ./waf configure --board MatekH743
+
+        # Compile the code
+        ./waf plane
+
+        # Go to the tools folder and run the python script to setup the simulation
+        cd Tools/autotest
+
+        # Run the script to setup the simulation
+        python3 sim_vehicle.py -v plane --console --map -w
+
    
 In the end, a white terminal should pop-up. Press Ctrl+C to exit and close the window.
 
 .. note:: 
-   If you did not install ArduPilot at ``~/ardupilot``, you can also set your custom installation path inside the Pegasus Simulator GUI, or by editing the file ``PegasusSimulator/extensions/pegasus/simulator/config/config.yaml`` and setting the ``ardupilot_dir`` field to the correct path.
+   If you did not use the submodules under ``PegasusSimulator/third_party``, you can also set your custom installation path inside the Pegasus Simulator GUI, or by editing the file ``PegasusSimulator/extensions/pegasus/simulator/config/config.yaml`` and setting the ``ardupilot_dir`` field to the correct path.
+   For the submodules, set ``ardupilot_dir`` to ``PegasusSimulator/third_party/ardupilot-copter`` (ArduCopter) or ``PegasusSimulator/third_party/ardupilot-plane`` (ArduPlane).
 
 
 This installation guide was based on the following resources:

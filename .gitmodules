@@ -1,0 +1,8 @@
+[submodule "third_party/ardupilot-copter"]
+	path = third_party/ardupilot-copter
+	url = https://github.com/ArduPilot/ardupilot.git
+	branch = Copter-4.4
+[submodule "third_party/ardupilot-plane"]
+	path = third_party/ardupilot-plane
+	url = https://github.com/ArduPilot/ardupilot.git
+	branch = Plane-4.4

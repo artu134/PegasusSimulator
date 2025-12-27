@@ -161,6 +161,10 @@ class Aerodynamics:
         """
         # Get body velocity (FLU frame)
         body_vel = state.linear_body_velocity
+        if not np.all(np.isfinite(body_vel)) or not np.all(np.isfinite(state.angular_velocity)):
+            self._aero_force = np.array([0.0, 0.0, 0.0])
+            self._aero_moment = np.array([0.0, 0.0, 0.0])
+            return self._aero_force, self._aero_moment
         self._airspeed = np.linalg.norm(body_vel)
         
         # Compute angles
@@ -205,9 +209,9 @@ class Aerodynamics:
         
         # Force in body frame (FLU: x-forward, y-left, z-up)
         # Rotate lift and drag from wind frame to body frame
-        Fx = -self._drag_force * cos_alpha + self._lift_force * sin_alpha
+        Fx = -self._drag_force * cos_alpha - self._lift_force * sin_alpha
         Fy = self._side_force
-        Fz = -self._drag_force * sin_alpha - self._lift_force * cos_alpha
+        Fz = -self._drag_force * sin_alpha + self._lift_force * cos_alpha
         
         self._aero_force = np.array([Fx, Fy, Fz])
         
@@ -237,4 +241,3 @@ class Aerodynamics:
         self._aero_moment = np.array([Mx, My, Mz])
         
         return self._aero_force, self._aero_moment
-

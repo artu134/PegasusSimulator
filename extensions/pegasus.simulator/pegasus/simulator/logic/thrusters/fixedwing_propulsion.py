@@ -91,6 +91,11 @@ class FixedWingPropulsion:
         """Throttle position normalized [0, 1]"""
         return self._throttle_normalized
 
+    @property
+    def throttle_pwm(self):
+        """Throttle PWM value"""
+        return self._throttle_pwm
+
     def pwm_to_thrust(self, pwm):
         """
         Convert PWM value to thrust command.
@@ -202,4 +207,3 @@ class FixedWingPropulsion:
         self._commanded_thrust = 0.0
         self._current_thrust = 0.0
         self._propeller_moment = 0.0
-
