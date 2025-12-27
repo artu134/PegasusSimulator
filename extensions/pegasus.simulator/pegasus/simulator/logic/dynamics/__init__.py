@@ -5,3 +5,5 @@
 
 from .drag import Drag
 from .linear_drag import LinearDrag
+from .aerodynamics import Aerodynamics
+from .control_surfaces import ControlSurfaces

@@ -28,7 +28,10 @@ ASSET_PATH = ROOT + "/pegasus.simulator/pegasus/simulator/assets"
 ROBOTS_ASSETS = ASSET_PATH + "/Robots"
 
 # Define the built in robots of the extension
-ROBOTS = {"Iris": ROBOTS_ASSETS + "/Iris/iris.usd"} #, "Flying Cube": ROBOTS_ASSETS + "/iris_cube.usda"}
+ROBOTS = {
+    "Iris": ROBOTS_ASSETS + "/Iris/iris.usd",
+    "FixedWing": ROBOTS_ASSETS + "/FixedWing/fixedwing.usda"
+} #, "Flying Cube": ROBOTS_ASSETS + "/iris_cube.usda"}
 
 # Setup the default simulation environments path
 NVIDIA_ASSETS_PATH = str(nucleus.get_assets_root_path())
